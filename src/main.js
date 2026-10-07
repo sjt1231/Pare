@@ -1,4 +1,13 @@
+import { initAnalytics, track } from './analytics.js';
 import './style.css';
+
+initAnalytics();
+
+document.querySelectorAll('a[href="#interest"]').forEach(link => {
+  link.addEventListener('click', () => track('cta_clicked', {
+    location: link.closest('header') ? 'header' : link.closest('dialog') ? 'preview' : 'hero',
+  }));
+});
 
 const icons = {
   grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
@@ -106,6 +115,12 @@ document.querySelectorAll('dialog').forEach(dialog => { dialog.querySelectorAll(
 document.querySelector('#review-interest').addEventListener('click', () => document.querySelector('#review-dialog').close());
 
 const form = document.querySelector('#interest-form');
+let formStarted = false;
+form.addEventListener('input', event => {
+  if (formStarted || !['email', 'company', 'spend', 'services'].includes(event.target.name)) return;
+  formStarted = true;
+  track('form_started');
+});
 form.addEventListener('submit', async event => {
   event.preventDefault();
   const button = form.querySelector('[type=submit]'); const status = document.querySelector('#form-status');
@@ -114,6 +129,7 @@ form.addEventListener('submit', async event => {
     const response = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.errors?.map(item => item.message).join(' ') || 'Your enquiry could not be registered. Please try again.');
+    track('form_submitted', { spend_band: form.elements.spend.value, spend_period: 'monthly', spend_scope: 'cloud_software' });
     form.innerHTML = `<div class="form-success" role="status" tabindex="-1"><i data-icon="check"></i><h3>Your interest is registered.</h3><p>Thank you. The Pare team has received your review enquiry and will assess pilot fit.</p><p class="quiet-note">No accounts have been connected and no payment is required.</p></div>`;
     hydrateIcons(form); form.querySelector('.form-success').focus();
   } catch (error) { status.textContent = error.message === 'Failed to fetch' ? 'We could not connect. Check your connection and try again.' : error.message; button.disabled = false; button.innerHTML = 'Register interest <span class="arrow">↗</span>'; }
