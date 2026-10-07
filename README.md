@@ -36,7 +36,7 @@ The dashboard and usage data are illustrative. The FAQ explains the pilot status
 
 PostHog project 646987 (US Cloud) tracks only `pare-taupe.vercel.app`; localhost and Vercel preview hostnames are excluded. Update the hostname allowlist in `src/analytics.js` when changing the production domain. The project token is public and write-only.
 
-Events: `$pageview`, `$pageleave`, `cta_clicked` (location), `form_started` (first field edit per page), and `form_submitted` (only after Formspree confirms success). Submissions include monthly spend band and scope, never email, company name or free-text services. Autocapture and session recordings are disabled. Browser local storage maintains anonymous visitor IDs; Do Not Track is respected.
+Events: `$pageview`, `$pageleave`, `cta_clicked` (location), `form_started` (first field edit per page), and `form_submitted` (only after Formspree confirms success). Submissions include monthly spend band and scope, never email, company name or free-text services. Autocapture is disabled. Session replay is enabled in the client with all input values masked, form error text masked, and network headers, bodies and console recording disabled. Enable web session recording in PostHog project settings to collect future sessions. Browser local storage maintains anonymous visitor IDs; Do Not Track is respected.
 
 For conversion, use a production-host-filtered `$pageview` → `form_submitted` funnel. CTA clicks are optional, since visitors can scroll directly to the form. Exclude team activity separately in PostHog. Existing Manus annual-spend data must not be conflated with this monthly cloud/software enquiry.
 

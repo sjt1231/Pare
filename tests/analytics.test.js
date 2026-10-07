@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const analytics = readFileSync(new URL('../src/analytics.js', import.meta.url), 'utf8')
   .replace("import posthog from 'posthog-js';", '').replaceAll('export function', 'function');
 
-test('production-only analytics with recordings and autocapture disabled', () => {
+test('production-only analytics with masked replay and autocapture disabled', () => {
   for (const hostname of ['localhost', 'pare-preview.vercel.app', 'pare-taupe.vercel.app']) {
     const calls = [];
     const context = vm.createContext({ window: { location: { hostname } }, posthog: {
@@ -16,7 +16,11 @@ test('production-only analytics with recordings and autocapture disabled', () =>
     assert.equal(calls.length, hostname === 'pare-taupe.vercel.app' ? 2 : 0);
     if (calls.length) {
       assert.equal(calls[0][1].autocapture, false);
-      assert.equal(calls[0][1].disable_session_recording, true);
+      assert.equal(calls[0][1].disable_session_recording, false);
+      assert.equal(calls[0][1].session_recording.maskAllInputs, true);
+      assert.equal(calls[0][1].session_recording.recordHeaders, false);
+      assert.equal(calls[0][1].session_recording.recordBody, false);
+      assert.equal(calls[0][1].enable_recording_console_log, false);
     }
   }
 });
